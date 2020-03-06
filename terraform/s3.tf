@@ -38,11 +38,6 @@ resource "aws_s3_bucket" "audio_repository" {
   ]
 }
 EOF
-    website {
-        index_document = "index.html"
-        error_document = "404.html"
-    }
-    
     force_destroy = true
 }
 
@@ -60,7 +55,7 @@ resource "aws_s3_bucket_object" "index_file" {
 }
 
 output "audio_repository_endpoint" {
-  value = aws_s3_bucket.audio_repository.website_endpoint
+  value = "https://${var.bucket_name}.s3.amazonaws.com/index.html"
 }
 
 
