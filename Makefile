@@ -1,21 +1,20 @@
   
-build:
-	# mkdir build
-	GOOS=linux GOARCH=amd64 go build -o build/app src/main.go
-	# GOOS=linux GOARCH=amd64 go build -ldflags '-extldflags "-static"'-o build/app.go src/main.go
-	# GOOS=linux GOARCH=amd64 go build -v -ldflags '-d -s -w' -a -o build/bin/app ./src/lambda.go
+init.go:
+	cd app;go mod init somosmastl.com/main
 
+clean.go:
+	rm app/app-lambda;rm app/go.mod;rm app/go.sum
+
+build.go:
+	cd app;GOOS=linux GOARCH=amd64 go build -o app-lambda
 init:
-	terraform init terraform/
+	cd terraform;rm -rf .terraform;terraform init
 
 plan:
-	terraform plan terraform/
+	rm -rf build; mkdir build;cd terraform;terraform plan
 
 apply:
-	terraform apply --auto-approve terraform/
+	cd terraform;terraform apply --auto-approve
 
 destroy:
-	terraform destroy --auto-approve terraform/
-
-clean:
-	rm -Rf ./build/
+	cd terraform;terraform destroy --auto-approve
