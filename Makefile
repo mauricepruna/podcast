@@ -14,7 +14,7 @@ plan:
 	rm -rf build; mkdir build;cd terraform;terraform plan
 
 apply:
-	cd terraform;terraform apply --auto-approve
+	cd terraform;terraform apply
 
 destroy:
-	cd terraform;terraform destroy --auto-approve
+	cd terraform;terraform destroy
