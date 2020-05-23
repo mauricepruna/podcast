@@ -3,7 +3,15 @@ package main
 import (
 	"bytes"
 	"encoding/xml"
-	"fmt"
+	"log"
+	"os"
+	"strings"
+
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 )
 
 type rss struct {
@@ -69,7 +77,43 @@ type channel struct {
 	Item           []item
 }
 
-func main() {
+func storeOnS3(content string) (string, error) {
+
+	bucketName := os.Getenv("bucket_name")
+	fileName := "podcast.xml"
+	svc := s3.New(session.New())
+
+	input := &s3.PutObjectInput{
+		Body:        aws.ReadSeekCloser(strings.NewReader(content)),
+		Bucket:      aws.String(bucketName),
+		Key:         aws.String(fileName),
+		ACL:         aws.String("public-read"),
+		ContentType: aws.String("application/xml"),
+	}
+
+	result, err := svc.PutObject(input)
+	if err != nil {
+		if aerr, ok := err.(awserr.Error); ok {
+			switch aerr.Code() {
+			default:
+				log.Printf("Error %s", aerr.Error())
+				return "", aerr
+			}
+		}
+		// Print the error, cast err to awserr.Error to get the Code and
+		// Message from an error.
+		log.Printf("Error %s", err.Error())
+		return "", err
+
+	}
+
+	log.Printf("Result: %s", result)
+	return *result.ETag, nil
+}
+
+func LambdaHandler() (string, error) {
+
+	log.Println("Lambda started")
 
 	rss := rss{Version: "2.0"}
 	rss.XmlnsItunes = "http://www.itunes.com/dtds/podcast-1.0.dtd"
@@ -121,5 +165,14 @@ func main() {
 	enc := xml.NewEncoder(w)
 	enc.Indent("  ", "    ")
 	enc.Encode(rss)
-	fmt.Println(w.String())
+	result, error := storeOnS3(w.String())
+
+	if error != nil {
+		return "", error
+	}
+	return result, nil
+}
+
+func main() {
+	lambda.Start(LambdaHandler)
 }
