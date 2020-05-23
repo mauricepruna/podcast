@@ -1,9 +1,15 @@
 # podcast
 
+* clean.go  
 
+* init.go
 
-~/my-function$ go get github.com/aws/aws-lambda-go/lambda
-~/my-function$ GOOS=linux go build main.go
+* build.go
 
-mkdir dist | zip dist/lambda.go.zip src/lambda.go
+* init
 
+* plan
+
+* apply
+
+* destroy
